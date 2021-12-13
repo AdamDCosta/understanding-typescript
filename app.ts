@@ -1,63 +1,120 @@
-// INTERFACES
-// describes structure of an object
-// doesn't exist in JS
-// don't initialize attributes
-// use interfaces to typecheck variables/objects
-// implement them in a class
-// used to share functionality amongst different classes
-// no implementation details which is what abstract classes do have
-// can't add public or private
-// can add readonly
+// INTERSECTION TYPES
 
-interface Named {
-  readonly name?: string;
-  outputName?: string; // optional attribute
+type Admin = {
+  name: string;
+  priviledges: string[];
+};
+
+type Employee = {
+  name: string;
+  startDate: Date;
 }
 
-interface Greetable extends Named {
-  greet(phrase: string): void
+// could do this with interfaces eg interface ElevatedEmployee extends Admin, Employee
+
+type ElevatedEmployee = Admin & Employee;
+
+// combination of the two types
+
+const e1: ElevatedEmployee = {
+  name: "Adam",
+  priviledges: ["create-server"],
+  startDate: new Date()
 }
 
+type CombinableVariable = string | number; // union type
+type Numeric = number | boolean;
 
-class Person implements Greetable {
-  name?: string;
 
-  constructor(n?: string) {
-    if (n) {
-      this.name = n;
-    }
+// Universal will be type number as an intersection will take the type in common
+type Universal = CombinableVariable & Numeric
+
+
+// TYPE GUARDS
+// checking if a method or property exists before trying to use it
+// for objects use instanceof or in
+// for other types use typeof
+
+const addTogether = (a: CombinableVariable, b: CombinableVariable) => {
+  if (typeof a === "string" || typeof b === "string") {
+    return a.toString() + b.toString();
   }
+  return a + b;
+}
+type UnknownEmployee = Employee | Admin;
 
-  greet(phrase?: string) {
-    if (this.name) {
-      console.log( phrase + " " + this.name)
-    } else {
-      console.log("Hi!")
-    }
+const printEmployeeInfo = (emp: UnknownEmployee) => {
+  console.log("Name: " + emp.name)
+  if ("priviledges" in emp) {
+    console.log ("Privileges: " + emp.priviledges) //  errors because UnknownEmployee may be of type Employee -> which doesn't have priviledges. Must put it inside a type check first
+  }
+  if ("startDate" in emp) {
+    console.log("start date: " + emp.startDate)
   }
 }
 
+printEmployeeInfo(e1);
 
-let user1: Greetable;
-// all we need to know about user1 is that it has to have a greet method
 
-user1 = new Person("adam")
-//this works because Person implements Greetable (which has a greet method)
-
-user1.greet("hi there, my name is")
-console.log(user1)
-
-let user2 = new Person()
-user2.greet();
-
-// Interfaces for functions
-
-interface AddFn {
-  (a: number, b: number): number;
+class Car {
+  drive() {
+    console.log("Driving...")
+  }
 }
 
-let addingTwoNumbers: AddFn;
-
-addingTwoNumbers = (n1: number, n2: number) => {
-  return n1 + n2;
+class Truck {
+  drive() {
+    console.log("Driving a truck...")
+  }
+  loadCargo(amount: number) {
+    console.log("Loading truck... " + amount)
+  }
 }
+
+type Vehicle = Car | Truck;
+
+const v1 = new Car();
+const v2 = new Truck();
+
+const useVehicle = (vehicle: Vehicle) => {
+  vehicle.drive();
+  // if ("loadCargo" in vehicle) {
+  //   vehicle.loadCargo(1000);
+  // }
+  if (vehicle instanceof Truck) {
+    vehicle.loadCargo(1000);
+  }
+}
+
+useVehicle(v1);
+useVehicle(v2);
+
+// DISCRIMINATED UNION
+// makes implementing type guards easier
+
+interface Bird {
+  type: "bird"; // type must hold a string which must say bird
+  flyingSpeed: number;
+}
+
+interface Horse {
+  type: "horse";
+  runningSpeed: number;
+}
+
+type Animal = Bird | Horse
+
+const moveAnimal = (animal: Animal) => {
+  // can't use instanceof with interfaces
+  let speed;
+  switch (animal.type) {
+    case "bird":
+      speed = animal.flyingSpeed;
+      break;
+    case "horse":
+      speed = animal.runningSpeed;
+  }
+  console.log("Moving with speed: " + speed)
+}
+
+moveAnimal({type: "bird", flyingSpeed: 20})

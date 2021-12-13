@@ -1,38 +1,67 @@
 "use strict";
-// INTERFACES
-// describes structure of an object
-// doesn't exist in JS
-// don't initialize attributes
-// use interfaces to typecheck variables/objects
-// implement them in a class
-// used to share functionality amongst different classes
-// no implementation details which is what abstract classes do have
-// can't add public or private
-// can add readonly
-class Person {
-    constructor(n) {
-        if (n) {
-            this.name = n;
-        }
+// Intersection types
+// combination of the two types
+const e1 = {
+    name: "Adam",
+    priviledges: ["create-server"],
+    startDate: new Date()
+};
+// TYPE GUARDS
+// checking if a method or property exists before trying to use it
+// for objects use instanceof or in
+// for other types use typeof
+const addTogether = (a, b) => {
+    if (typeof a === "string" || typeof b === "string") {
+        return a.toString() + b.toString();
     }
-    greet(phrase) {
-        if (this.name) {
-            console.log(phrase + " " + this.name);
-        }
-        else {
-            console.log("Hi!");
-        }
+    return a + b;
+};
+const printEmployeeInfo = (emp) => {
+    console.log("Name: " + emp.name);
+    if ("priviledges" in emp) {
+        console.log("Privileges: " + emp.priviledges); //  errors because UnknownEmployee may be of type Employee -> which doesn't have priviledges. Must put it inside a type check first
+    }
+    if ("startDate" in emp) {
+        console.log("start date: " + emp.startDate);
+    }
+};
+printEmployeeInfo(e1);
+class Car {
+    drive() {
+        console.log("Driving...");
     }
 }
-let user1;
-// all we need to know about user1 is that it has to have a greet method
-user1 = new Person("adam");
-//this works because Person implements Greetable (which has a greet method)
-user1.greet("hi there, my name is");
-console.log(user1);
-let user2 = new Person();
-user2.greet();
-let addingTwoNumbers;
-addingTwoNumbers = (n1, n2) => {
-    return n1 + n2;
+class Truck {
+    drive() {
+        console.log("Driving a truck...");
+    }
+    loadCargo(amount) {
+        console.log("Loading truck... " + amount);
+    }
+}
+const v1 = new Car();
+const v2 = new Truck();
+const useVehicle = (vehicle) => {
+    vehicle.drive();
+    // if ("loadCargo" in vehicle) {
+    //   vehicle.loadCargo(1000);
+    // }
+    if (vehicle instanceof Truck) {
+        vehicle.loadCargo(1000);
+    }
 };
+useVehicle(v1);
+useVehicle(v2);
+const moveAnimal = (animal) => {
+    // can't use instanceof with interfaces
+    let speed;
+    switch (animal.type) {
+        case "bird":
+            speed = animal.flyingSpeed;
+            break;
+        case "horse":
+            speed = animal.runningSpeed;
+    }
+    console.log("Moving with speed: " + speed);
+};
+moveAnimal({ type: "bird", flyingSpeed: 20 });
